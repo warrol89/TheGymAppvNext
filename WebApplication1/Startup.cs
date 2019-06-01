@@ -20,6 +20,11 @@ namespace WebApplication1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var connString = Configuration["SqlServer"];
+            services.AddDbContext<GymAppContext>(option => option.UseSqlServer(connString));
+            services.AddScoped<IZsysUserService, ZSysUserService>();
+            services.AddScoped<IZSysUserRepository, ZSysUserRepository>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             // In production, the Angular files will be served from this directory
@@ -46,7 +51,10 @@ namespace WebApplication1
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-
+            AutoMapper.Mapper.Initialize(config => {
+                config.CreateMap<ZSysUserDTO, ZSysUser>()
+                .ForMember(d => d.AddressLine1, s => s.MapFrom(e => e.address1));
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
